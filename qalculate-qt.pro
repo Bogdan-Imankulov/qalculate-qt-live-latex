@@ -26,6 +26,16 @@ isEmpty(APPDATA_DIR) {
 TEMPLATE = app
 TARGET = qalculate-qt
 INCLUDEPATH += src
+
+# Live LaTeX rendering (MicroTeX, vendored). MicroTeX loads its fonts from a
+# "res" directory on disk next to the executable (not from Qt resources),
+# so it has to be copied alongside the build output.
+MICROTEX_DIR = $$PWD/vendor/microtex
+INCLUDEPATH += $$MICROTEX_DIR/src
+LIBS += -L$$MICROTEX_DIR/build -lLaTeX -ltinyxml2
+DEFINES += BUILD_QT
+win32: QMAKE_POST_LINK += $$quote(cp -r -f $$MICROTEX_DIR/build/res $$OUT_PWD/release/ $$escape_expand(\n\t))
+
 win32: {
 	LIBS += -lqalculate -lxml2 -lmpfr -liconv -lintl -lgmp -licuuc -lcurl
 	CONFIG += c++17
@@ -43,9 +53,9 @@ QT += widgets network
 MOC_DIR = build
 OBJECTS_DIR = build
 
-HEADERS += src/calendarconversiondialog.h src/csvdialog.h src/dataseteditdialog.h src/datasetsdialog.h src/expressionedit.h src/fpconversiondialog.h src/functioneditdialog.h src/functionsdialog.h src/historyview.h src/itemproxymodel.h src/keypadwidget.h src/matrixwidget.h src/percentagecalculationdialog.h src/periodictabledialog.h src/plotdialog.h src/preferencesdialog.h src/qalculateqtsettings.h src/qalculatewindow.h src/unitsdialog.h src/uniteditdialog.h src/unknowneditdialog.h src/variableeditdialog.h src/variablesdialog.h
+HEADERS += src/calendarconversiondialog.h src/csvdialog.h src/dataseteditdialog.h src/datasetsdialog.h src/expressionedit.h src/fpconversiondialog.h src/functioneditdialog.h src/functionsdialog.h src/historyview.h src/itemproxymodel.h src/keypadwidget.h src/latexpreview.h src/matrixwidget.h src/percentagecalculationdialog.h src/periodictabledialog.h src/plotdialog.h src/preferencesdialog.h src/qalculateqtsettings.h src/qalculatewindow.h src/unitsdialog.h src/uniteditdialog.h src/unknowneditdialog.h src/variableeditdialog.h src/variablesdialog.h
 
-SOURCES += src/calendarconversiondialog.cpp src/csvdialog.cpp src/dataseteditdialog.cpp src/datasetsdialog.cpp src/expressionedit.cpp src/fpconversiondialog.cpp src/functioneditdialog.cpp src/functionsdialog.cpp src/historyview.cpp src/itemproxymodel.cpp src/keypadwidget.cpp src/main.cpp src/matrixwidget.cpp src/percentagecalculationdialog.cpp src/periodictabledialog.cpp src/plotdialog.cpp src/preferencesdialog.cpp src/qalculateqtsettings.cpp src/qalculatewindow.cpp src/unitsdialog.cpp src/uniteditdialog.cpp src/unknowneditdialog.cpp src/variableeditdialog.cpp src/variablesdialog.cpp
+SOURCES += src/calendarconversiondialog.cpp src/csvdialog.cpp src/dataseteditdialog.cpp src/datasetsdialog.cpp src/expressionedit.cpp src/fpconversiondialog.cpp src/functioneditdialog.cpp src/functionsdialog.cpp src/historyview.cpp src/itemproxymodel.cpp src/keypadwidget.cpp src/latexpreview.cpp src/main.cpp src/matrixwidget.cpp src/percentagecalculationdialog.cpp src/periodictabledialog.cpp src/plotdialog.cpp src/preferencesdialog.cpp src/qalculateqtsettings.cpp src/qalculatewindow.cpp src/unitsdialog.cpp src/uniteditdialog.cpp src/unknowneditdialog.cpp src/variableeditdialog.cpp src/variablesdialog.cpp
 
 LANGUAGES = ca de en es fr ka nl pt_BR pt_PT ru sl sv zh_CN zh_TW
 

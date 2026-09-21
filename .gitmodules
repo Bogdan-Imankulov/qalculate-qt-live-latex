@@ -1,0 +1,3 @@
+[submodule "vendor/microtex"]
+	path = vendor/microtex
+	url = https://github.com/NanoMichael/MicroTeX.git

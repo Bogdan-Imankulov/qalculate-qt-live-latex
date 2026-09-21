@@ -26,6 +26,7 @@ class QLocalServer;
 class QCommandLineParser;
 class ExpressionEdit;
 class HistoryView;
+class LatexPreviewWidget;
 class QSplitter;
 class QLabel;
 class KeypadWidget;
@@ -81,6 +82,7 @@ class QalculateWindow : public QMainWindow {
 
 		ExpressionEdit *expressionEdit;
 		HistoryView *historyView;
+		LatexPreviewWidget *latexPreview, *latexResultPreview;
 		QSplitter *ehSplitter;
 		QLabel *statusLabelLeft, *statusLabelRight;
 		PreferencesDialog *preferencesDialog;
@@ -207,6 +209,7 @@ class QalculateWindow : public QMainWindow {
 		void onRPNVisibilityChanged(bool);
 		void onRPNClosed();
 		void onExpressionChanged();
+		void onExpressionLatexChanged(QString latex);
 		void onHistoryReloaded();
 		void onStatusChanged(QString, bool, bool, bool, bool);
 		void autoCalculateTimeout();

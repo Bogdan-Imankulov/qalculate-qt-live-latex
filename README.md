@@ -1,4 +1,38 @@
-# Qalculate! Qt UI
+# Qalculate! Qt UI — with live LaTeX preview
+
+This is a personal fork of [Qalculate/qalculate-qt](https://github.com/Qalculate/qalculate-qt) (all credit for the calculator itself goes to Hanna Knutsson and the Qalculate! team) that adds a live, typeset LaTeX preview above the expression editor: one line shows the expression being typed, another shows the live-computed result, both rendered with [MicroTeX](https://github.com/NanoMichael/MicroTeX) (credit to its author, NanoMichael) instead of plain text.
+
+Changed/added files: [qalculate-qt.pro](qalculate-qt.pro), [src/latexpreview.h](src/latexpreview.h) / [src/latexpreview.cpp](src/latexpreview.cpp) (new), [src/expressionedit.h](src/expressionedit.h)/[.cpp](src/expressionedit.cpp), [src/qalculatewindow.h](src/qalculatewindow.h)/[.cpp](src/qalculatewindow.cpp), [src/main.cpp](src/main.cpp). Everything else is untouched upstream qalculate-qt. MicroTeX is vendored as the `vendor/microtex` git submodule, unmodified.
+
+### Building this fork (Windows, MSYS2 UCRT64)
+
+```bash
+# one-time toolchain + deps
+pacman -S mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja \
+          mingw-w64-ucrt-x86_64-qt6-base mingw-w64-ucrt-x86_64-qt6-svg mingw-w64-ucrt-x86_64-qt6-tools \
+          mingw-w64-ucrt-x86_64-libqalculate mingw-w64-ucrt-x86_64-tinyxml2
+
+git clone --recurse-submodules https://github.com/Bogdan-Imankulov/qalculate-qt-live-latex.git
+cd qalculate-qt-live-latex
+
+# build MicroTeX as a static lib once
+cmake -S vendor/microtex -B vendor/microtex/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+      -DQT=ON -DBUILD_EXAMPLE=OFF -DGRAPHICS_DEBUG=OFF -DHAVE_LOG=OFF -DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON
+cmake --build vendor/microtex/build --target LaTeX -j4
+
+# build qalculate-qt itself
+qmake qalculate-qt.pro
+mingw32-make -j4
+```
+
+The resulting `release/qalculate-qt.exe` needs `res/` (copied automatically by the build) and libqalculate's data files (`definitions/*.xml`, copy from `$MSYS_PREFIX/share/qalculate/*.xml`) next to it to run; see the prebuilt zip in [Releases](../../releases) for a build with everything already bundled (Qt/MinGW DLLs included via `windeployqt6`).
+
+> [!NOTE]
+> `\num{}`/`\qty{}` etc. (siunitx LaTeX commands libqalculate emits for numbers/units) aren't known to MicroTeX by default; `src/main.cpp` registers a `\num` macro to work around this. Unit-bearing results (`\qty`, `\unit`, `\per`, …) aren't mapped yet.
+
+---
+
+
 
 <a href="https://raw.githubusercontent.com/Qalculate/qalculate.github.io/master/images/qalculate-qt.png"><img src="https://raw.githubusercontent.com/Qalculate/qalculate.github.io/master/images/qalculate-qt.png" width="552"></a>
 

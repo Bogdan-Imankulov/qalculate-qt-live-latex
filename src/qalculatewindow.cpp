@@ -61,6 +61,7 @@
 #include "qalculateqtsettings.h"
 #include "expressionedit.h"
 #include "historyview.h"
+#include "latexpreview.h"
 #include "keypadwidget.h"
 #include "unknowneditdialog.h"
 #include "variableeditdialog.h"
@@ -820,12 +821,29 @@ QalculateWindow::QalculateWindow() : QMainWindow() {
 	historyView->expressionEdit = expressionEdit;
 	historyView->setReversed(settings->expression_pos != 0);
 
+	latexPreview = new LatexPreviewWidget(this);
+	latexPreview->setMaximumHeight(80);
+	latexPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	connect(expressionEdit, SIGNAL(expressionLatexChanged(QString)), this, SLOT(onExpressionLatexChanged(QString)));
+
+	latexResultPreview = new LatexPreviewWidget(this, 16.f);
+	latexResultPreview->setMaximumHeight(60);
+	latexResultPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	QWidget *expressionContainer = new QWidget(this);
+	QVBoxLayout *expressionContainerLayout = new QVBoxLayout(expressionContainer);
+	expressionContainerLayout->setContentsMargins(0, 0, 0, 0);
+	expressionContainerLayout->setSpacing(0);
+	expressionContainerLayout->addWidget(latexPreview);
+	expressionContainerLayout->addWidget(latexResultPreview);
+	expressionContainerLayout->addWidget(expressionEdit);
+
 	if(settings->expression_pos == 0) {
-		ehSplitter->addWidget(expressionEdit);
+		ehSplitter->addWidget(expressionContainer);
 		ehSplitter->addWidget(historyView);
 	} else {
 		ehSplitter->addWidget(historyView);
-		ehSplitter->addWidget(expressionEdit);
+		ehSplitter->addWidget(expressionContainer);
 	}
 	ehSplitter->setStretchFactor(0, settings->expression_pos == 0 ? 0 : 1);
 	ehSplitter->setStretchFactor(1, settings->expression_pos == 0 ? 1 : 0);
@@ -6889,6 +6907,10 @@ void QalculateWindow::onExpressionChanged() {
 	updateResultBases();
 }
 
+void QalculateWindow::onExpressionLatexChanged(QString latex) {
+	latexPreview->setLaTeX(latex.toStdWString());
+}
+
 void QalculateWindow::onHistoryReloaded() {
 	if(settings->status_in_history && settings->display_expression_status) {
 		historyView->clearTemporary();
@@ -6918,6 +6940,7 @@ void QalculateWindow::onStatusChanged(QString status, bool is_expression, bool h
 		auto_error = false;
 		prev_autocalculable = 0;
 		mauto.setAborted();
+		latexResultPreview->setLaTeX(L"");
 		updateWindowTitleResult(result_text);
 	} else if(!is_expression || !settings->auto_calculate || !expressionEdit->parsedCalculable()) {
 		prev_autocalculable = 0;
@@ -6931,6 +6954,7 @@ void QalculateWindow::onStatusChanged(QString status, bool is_expression, bool h
 		auto_result_text = "";
 		auto_exact_text = "";
 		mauto.setAborted();
+		latexResultPreview->setLaTeX(L"");
 		CALCULATOR->addMessages(&expressionEdit->status_messages);
 		historyView->addResult(values, current_text, true, auto_expression, false, false, QString(), NULL, 0, 0, true);
 		updateWindowTitleResult("");
@@ -7645,11 +7669,21 @@ void QalculateWindow::autoCalculateTimeout() {
 			}
 		}
 		values.push_back(result);
+		MathStructure m_result_latex(mauto);
+		PrintOptions po_result_latex = po;
+		po_result_latex.is_approximate = NULL;
+		po_result_latex.can_display_unicode_string_arg = NULL;
+		CALCULATOR->beginTemporaryStopMessages();
+		m_result_latex.format(po_result_latex);
+		QString result_latex_str = QStringLiteral("= ") + QString::fromStdString(m_result_latex.print(po_result_latex, true, false, TAG_TYPE_LATEX));
+		latexResultPreview->setLaTeX(result_latex_str.toStdWString());
+		CALCULATOR->endTemporaryStopMessages();
 	} else {
 		auto_result = "";
 		auto_result_text = "";
 		auto_exact_text = "";
 		mauto.setAborted();
+		latexResultPreview->setLaTeX(L"");
 		if(settings->auto_calculate_delay > 0) {
 			updateWindowTitleResult("");
 			return;

@@ -1,6 +1,11 @@
 changes
 qalculate-qt
 
+# Live LaTeX preview build output
+/release/
+/build/
+/vendor/microtex/build/
+
 # C++ objects and libs
 *.slo
 *.lo

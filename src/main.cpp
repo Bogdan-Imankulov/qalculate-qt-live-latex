@@ -33,6 +33,8 @@
 #include <libqalculate/qalculate.h>
 #include "qalculatewindow.h"
 #include "qalculateqtsettings.h"
+#include "latex.h"
+#include "core/macro.h"
 
 #ifdef _WIN32
 #	include <windows.h>
@@ -282,6 +284,12 @@ int main(int argc, char **argv) {
 		font.fromString(QString::fromStdString(settings->custom_app_font));
 		app.setFont(font);
 	}
+
+	tex::LaTeX::init();
+	// libqalculate's LaTeX output uses siunitx's \num{} for decimal numbers
+	// (optionally with a [key=value] option, e.g. \num[parse-numbers=true]{4.38});
+	// MicroTeX doesn't know siunitx, so just show the number itself.
+	tex::NewCommandMacro::addNewCommand(L"num", L"#2", 2, L"");
 
 	QalculateWindow *win = new QalculateWindow();
 	if(parser->value(tOption).isEmpty()) {

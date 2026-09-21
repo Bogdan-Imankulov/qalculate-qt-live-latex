@@ -3033,6 +3033,18 @@ void ExpressionEdit::displayParseStatus(bool update, bool show_tooltip) {
 			}
 		}
 		current_status_struct = mparse;
+		if(!str_e.empty()) {
+			MathStructure m_latex(mparse);
+			PrintOptions po_latex = settings->printops;
+			po_latex.is_approximate = NULL;
+			po_latex.can_display_unicode_string_arg = NULL;
+			CALCULATOR->beginTemporaryStopMessages();
+			m_latex.format(po_latex);
+			emit expressionLatexChanged(QString::fromStdString(m_latex.print(po_latex, true, false, TAG_TYPE_LATEX)));
+			CALCULATOR->endTemporaryStopMessages();
+		} else {
+			emit expressionLatexChanged(QString());
+		}
 		if(auto_calculable && !test_autocalculatable(mparse)) auto_calculable = 0;
 		else if(auto_calculable && !cdata->current_function && ((str_e.length() > 3 && str_u.empty() && str_e.find(" to", str_e.length() - 3) != std::string::npos) || (str_e.length() > 6 && str_w.empty() && str_e.find(" where", str_e.length() - 6) != std::string::npos) || (str_e.length() > 2 && str_e.find("/.", str_e.length() - 2) != std::string::npos)) && settings->evalops.parse_options.base != BASE_UNICODE && (settings->evalops.parse_options.base != BASE_CUSTOM || CALCULATOR->customInputBase() <= 62)) auto_calculable = 0;
 		else if(auto_calculable && !str_w.empty() && (str_w.back() == '>' || str_w.back() == '<' || str_w.back() == '=' || (str_w.length() >= 3 && (str_w.find("≤", str_w.length() - 3) != std::string::npos || str_w.find("≥", str_w.length() - 3) != std::string::npos || str_w.find("≠", str_w.length() - 3) != std::string::npos)))) auto_calculable = 0;
