@@ -25,10 +25,10 @@ qmake qalculate-qt.pro
 mingw32-make -j4
 ```
 
-The resulting `release/qalculate-qt.exe` needs `res/` (copied automatically by the build) and libqalculate's data files (`definitions/*.xml`, copy from `$MSYS_PREFIX/share/qalculate/*.xml`) next to it to run; see the prebuilt zip in [Releases](../../releases) for a build with everything already bundled (Qt/MinGW DLLs included via `windeployqt6`).
+The resulting `release/qalculate-qt.exe` needs a few things copied next to it to run standalone: `res/` (copied automatically by the build), libqalculate's data files (`definitions/*.xml`, copy from `$MSYS_PREFIX/share/qalculate/*.xml`), Qt/MinGW DLLs (`windeployqt6 qalculate-qt.exe` plus the mingw runtime/library DLLs `ldd` reports), and, for the plotting feature, `gnuplot.exe` + its dependencies + `share/gnuplot/` (from `pacman -S mingw-w64-ucrt-x86_64-gnuplot`) - libqalculate shells out to plain `gnuplot` on PATH, and placing it next to the exe is enough since Windows checks the calling executable's own directory first. See the prebuilt zip in [Releases](../../releases) for a build with all of this already bundled.
 
 > [!NOTE]
-> `\num{}`/`\qty{}` etc. (siunitx LaTeX commands libqalculate emits for numbers/units) aren't known to MicroTeX by default; `src/main.cpp` registers a `\num` macro to work around this. Unit-bearing results (`\qty`, `\unit`, `\per`, …) aren't mapped yet.
+> libqalculate's LaTeX output uses siunitx-style commands MicroTeX doesn't know: a fixed set of wrapper commands (`\num`, `\qty`, `\si`, `\unit`, `\per`, `\square`, `\cubic`) are registered as macros in `src/main.cpp`, and any other unrecognized `\command` (the hundreds of individual unit/prefix names, e.g. `\radian`, `\kg`) is neutralized to plain text by `LatexPreviewWidget::setLaTeX` in `src/latexpreview.cpp` instead of erroring out in red.
 
 ---
 
