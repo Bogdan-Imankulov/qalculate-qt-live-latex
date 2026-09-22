@@ -46,6 +46,28 @@ extern bool title_modified;
 
 QTranslator translator, translator_qt, translator_qtbase;
 
+// libqalculate's LaTeX output wraps numbers/units in siunitx commands
+// (\num{}, \qty{}{}, \si{}, \unit{}, \per, \square, \cubic) that MicroTeX
+// doesn't know, so it renders them as literal (red) errors. These wrapper
+// commands are a small, fixed set (unlike the hundreds of individual unit
+// names siunitx-style output also uses - see LatexPreviewWidget's generic
+// unknown-command fallback for those).
+static void registerSiunitxWrapperMacros() {
+	auto tryAdd = [](const std::wstring &name, const std::wstring &code, int argc, const wchar_t *def = nullptr) {
+		try {
+			if(def) tex::NewCommandMacro::addNewCommand(name, code, argc, def);
+			else tex::NewCommandMacro::addNewCommand(name, code, argc);
+		} catch(...) {}
+	};
+	tryAdd(L"num", L"#2", 2, L"");
+	tryAdd(L"qty", L"#2\\,#3", 3, L"");
+	tryAdd(L"si", L"#2", 2, L"");
+	tryAdd(L"unit", L"#2", 2, L"");
+	tryAdd(L"per", L"/", 0);
+	tryAdd(L"square", L"#1^2", 1);
+	tryAdd(L"cubic", L"#1^3", 1);
+}
+
 int main(int argc, char **argv) {
 
 #ifdef _WIN32
@@ -286,10 +308,7 @@ int main(int argc, char **argv) {
 	}
 
 	tex::LaTeX::init();
-	// libqalculate's LaTeX output uses siunitx's \num{} for decimal numbers
-	// (optionally with a [key=value] option, e.g. \num[parse-numbers=true]{4.38});
-	// MicroTeX doesn't know siunitx, so just show the number itself.
-	tex::NewCommandMacro::addNewCommand(L"num", L"#2", 2, L"");
+	registerSiunitxWrapperMacros();
 
 	QalculateWindow *win = new QalculateWindow();
 	if(parser->value(tOption).isEmpty()) {
