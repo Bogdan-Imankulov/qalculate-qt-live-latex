@@ -74,6 +74,15 @@ int main(int argc, char **argv) {
 	if(!qEnvironmentVariableIsSet("QT_QPA_PLATFORM")) {
 		qputenv("QT_QPA_PLATFORM", "windows:altgr");
 	}
+	// libqalculate shells out to gnuplot for plotting; gnuplot's own default
+	// interactive terminal on this build is "qt", which spawns a separate
+	// Qt helper process (gnuplot_qt.exe) that hangs/never finishes
+	// initializing when driven this way, leaving a blank plot window after
+	// a long wait. "windows" is gnuplot's native, dependency-free terminal
+	// and starts immediately.
+	if(!qEnvironmentVariableIsSet("GNUTERM")) {
+		qputenv("GNUTERM", "windows");
+	}
 #endif
 
 	QApplication app(argc, argv);
