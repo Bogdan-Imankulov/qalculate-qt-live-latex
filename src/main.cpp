@@ -59,10 +59,18 @@ static void registerSiunitxWrapperMacros() {
 			else tex::NewCommandMacro::addNewCommand(name, code, argc);
 		} catch(...) {}
 	};
-	tryAdd(L"num", L"#2", 2, L"");
-	tryAdd(L"qty", L"#2\\,#3", 3, L"");
-	tryAdd(L"si", L"#2", 2, L"");
-	tryAdd(L"unit", L"#2", 2, L"");
+	// argc below is the count of REQUIRED {...} groups only - MicroTeX's
+	// 4-arg addNewCommand() always adds exactly one more (the optional
+	// [...] group) on top of it. Passing the total apparent arg count
+	// (like the required arg count + 1) makes it look for one MORE
+	// required brace group than actually exists in the source (e.g.
+	// \qty[opts]{value}{unit} has 2 required groups, not 3): since it's
+	// missing, the parser scavenges whatever character/command follows
+	// as a bogus argument, corrupting everything after it in the formula.
+	tryAdd(L"num", L"#2", 1, L"");
+	tryAdd(L"qty", L"#2\\,#3", 2, L"");
+	tryAdd(L"si", L"#2", 1, L"");
+	tryAdd(L"unit", L"#2", 1, L"");
 	tryAdd(L"per", L"/", 0);
 	tryAdd(L"square", L"#1^2", 1);
 	tryAdd(L"cubic", L"#1^3", 1);
